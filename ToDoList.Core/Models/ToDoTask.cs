@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations.Schema;
+using ToDoList.Core.Enums;
 
 namespace ToDoList.Core.Models
 {

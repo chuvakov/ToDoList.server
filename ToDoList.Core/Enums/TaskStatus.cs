@@ -1,5 +1,5 @@
 ﻿using System;
-namespace ToDoList.Core
+namespace ToDoList.Core.Enums
 {
 	public enum TaskStatus
 	{

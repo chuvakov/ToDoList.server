@@ -1,5 +1,9 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ToDoList.Core;
 using ToDoList.Core.Models;
 using ToDoList.Dto;
@@ -28,5 +32,15 @@ public class TasksController : ControllerBase
         
         await _dbContext.Tasks.AddAsync(task);
         await _dbContext.SaveChangesAsync();
+    }
+
+    [HttpPost("GetAll")]
+    public async Task<IEnumerable<TaskDto>> GetAll(GetAllTasksInput input)
+    {
+        IQueryable<ToDoTask> query = _dbContext.Tasks
+            .Where(x => x.Status == input.Status && x.UserId == 1);
+
+        var tasks = await query.ToListAsync();
+        return _mapper.Map<IEnumerable<TaskDto>>(tasks);
     }
 }
