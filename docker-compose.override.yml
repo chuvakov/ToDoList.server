@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+    toDoList.pgsql:
+        ports:
+            - 5432:5432
+        environment:
+            - POSTGRES_PASSWORD=123qwe
+            - POSTGRES_DB=toDoList
+            - PGDATA=/var/lib/postgresql/data/pgdata
+        volumes:
+            - ./docker/temp/db:/var/lib/postgresql/data/pgdata
