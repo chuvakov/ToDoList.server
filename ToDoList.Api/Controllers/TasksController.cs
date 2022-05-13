@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ToDoList.Core;
@@ -24,7 +25,7 @@ public class TasksController : ControllerBase
     }
     
     [HttpPost("Create")]
-    public async Task Create(CreateTaskInput input)
+    public async Task<IActionResult> Create(CreateTaskInput input)
     {
         int userId = 1;
         var task = _mapper.Map<ToDoTask>(input);
@@ -32,6 +33,7 @@ public class TasksController : ControllerBase
         
         await _dbContext.Tasks.AddAsync(task);
         await _dbContext.SaveChangesAsync();
+        return Ok();
     }
 
     [HttpPost("GetAll")]
@@ -42,5 +44,38 @@ public class TasksController : ControllerBase
 
         var tasks = await query.ToListAsync();
         return _mapper.Map<IEnumerable<TaskDto>>(tasks);
+    }
+
+    [HttpPost("Delete")]
+    [ProducesResponseType(typeof(string),StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(string),StatusCodes.Status200OK)]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var task = await _dbContext.Tasks.FirstOrDefaultAsync(x => x.Id == id);
+        if (task == null)
+        {
+            return NotFound($"Задача с Id = {id} не найдена");
+        }
+
+        _dbContext.Tasks.Remove(task);
+        await _dbContext.SaveChangesAsync();
+        return Ok();
+    }
+    
+    [HttpPost("Update")]
+    [ProducesResponseType(typeof(string),StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(string),StatusCodes.Status200OK)]
+    public async Task<IActionResult> Update(UpdateTaskDto input)
+    {
+        var task = await _dbContext.Tasks.FirstOrDefaultAsync(x => x.Id == input.Id);
+        if (task == null)
+        {
+            return NotFound($"Задача с Id = {input.Id} не найдена");
+        }
+        
+        _mapper.Map(input, task);
+        _dbContext.Tasks.Update(task);
+        await _dbContext.SaveChangesAsync();
+        return Ok();
     }
 }
