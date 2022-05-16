@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using ToDoList.Core;
 using ToDoList.Core.Models;
 using ToDoList.Dto;
+using TaskStatus = ToDoList.Core.Enums.TaskStatus;
 
 namespace ToDoList.Controllers;
 
@@ -27,12 +28,18 @@ public class TasksController : ControllerBase
     [HttpPost("Create")]
     public async Task<IActionResult> Create(CreateTaskInput input)
     {
+        if (_dbContext.Tasks.Any(x => x.Name == input.Name))
+        {
+            return BadRequest("Такая задача уже существует!");
+        }
+        
         int userId = 1;
         var task = _mapper.Map<ToDoTask>(input);
         task.UserId = userId;
         
         await _dbContext.Tasks.AddAsync(task);
         await _dbContext.SaveChangesAsync();
+        
         return Ok();
     }
 
@@ -59,6 +66,7 @@ public class TasksController : ControllerBase
 
         _dbContext.Tasks.Remove(task);
         await _dbContext.SaveChangesAsync();
+        
         return Ok();
     }
     
@@ -76,6 +84,26 @@ public class TasksController : ControllerBase
         _mapper.Map(input, task);
         _dbContext.Tasks.Update(task);
         await _dbContext.SaveChangesAsync();
+        
         return Ok();
+    }
+    
+    [HttpGet("GetTaskCounts")]
+    public async Task<GetTaskCountsResponse> GetTaskCounts()
+    {
+        var activeCount = await _dbContext.Tasks
+            .Where(x => x.Status == TaskStatus.Active)
+            .CountAsync();
+        
+        var completedCount = await _dbContext.Tasks
+            .Where(x => x.Status == TaskStatus.Completed)
+            .CountAsync();
+
+        return new GetTaskCountsResponse
+        {
+            ActiveCount = activeCount,
+            SuccessCount = completedCount,
+            TotalCount = activeCount + completedCount
+        };
     }
 }

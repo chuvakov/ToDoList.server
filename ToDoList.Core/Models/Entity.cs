@@ -6,9 +6,6 @@ namespace ToDoList.Core.Models
 		public TPrimaryKey Id {get; set;}
 	}
 
-	public abstract class Entity : Entity<int>
-	{
-		
-	}
+	public abstract class Entity : Entity<int> { }
 }
 
